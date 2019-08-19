@@ -1,0 +1,101 @@
+Customer_ID,Customer_Name,Country,City,Industry,Vertical,Type_of_Customer,Start_Date_1,End_Date_1,SurvTime,Churned,Customer_Size,MRR,Total_Revenue,Advertising Costs,Sales_Person,Website_Visits,Customer_Complaints,NPS_Score,Customizable,Limited Feature Set
+1,Healthcare_1,United States,Boston,Healthcare,Hospital,Business,42075,,1557,0,Enterprise,1800,21600,15000,20,6,45,5,L,Y
+2,Healthcare_2,United States,Nashville,Healthcare,SNF,Business,42373,43536,1163,1,Midsized,1900,22800,7500,17,13,0,6,M,N
+3,Healthcare_3,United States,Detroit,Healthcare,Behavioral Health,Business,43095,43171,3729,1,SMB,1800,21600,3500,17,12,70,3,M,N
+4,Healthcare_4,United States,Memphis,Healthcare,Dialysis ,Business,42409,,1223,0,Enterprise,3000,36000,19000,22,1,65,0,L,Y
+5,Healthcare_5,United States,New York,Healthcare,Dialysis ,Business,42082,,1550,0,Enterprise,3500,42000,15000,22,38,14,9,M,Y
+6,Healthcare_6,United States,New York,Healthcare,Hospice,Business,41739,43604,1865,1,Enterprise,1800,21600,4000,15,9,1,0,H,N
+7,Healthcare_7,United States,New York,Healthcare,Hospice,Business,41413,42754,1341,1,Midsized,1200,14400,1200,15,8,51,6,H,N
+8,Healthcare_8,United States,New York,Healthcare,Home Health,Business,41129,41908,779,1,SMB,1125,13500,1400,15,14,90,8,M,Y
+9,Healthcare_9,United States,Nashville,Healthcare,Hospital,Business,41555,41908,353,1,SMB,1350,16200,14500,20,0,93,9,M,Y
+10,Healthcare_10,United States,Boston,Healthcare,Insurance,Business,41413,,2219,0,Midsized,1200,14400,4600,17,19,42,6,M,Y
+11,Healthcare_11,United States,Detroit,Healthcare,Insurance,Business,42738,,894,0,Midsized,2000,24000,10500,17,41,31,7,H,Y
+12,Healthcare_12,United States,San Francisco,Healthcare,Insurance,Business,41125,,2507,0,Enterprise,1150,13800,5000,17,24,25,9,M,N
+13,Healthcare_13,United States,Green Bay,Healthcare,Insurance,Business,43467,,165,0,SMB,2200,26400,12000,17,26,42,10,M,Y
+14,Healthcare_14,United States,Dallas,Healthcare,Insurance,Business,41414,42754,1340,1,Enterprise,1500,18000,17000,17,33,54,2,H,N
+15,Healthcare_15,United States,Houston,Healthcare,Insurance,Business,42748,43345,597,1,Midsized,2150,25800,12000,17,45,100,3,M,N
+16,Healthcare_16,United States,Denver,Healthcare,Home Health,Consumer,41135,42754,1619,1,Midsized,1135,13620,4600,15,2,81,4,L,N
+17,Healthcare_17,United States,Tulsa,Healthcare,SNF,Consumer,43477,43614,137,1,SMB,1900,22800,1650,17,18,37,4,M,N
+18,Healthcare_18,United States,Columbus,Healthcare,Insurance,Consumer,42927,43447,520,1,Enterprise,2250,27000,13000,17,18,54,1,H,N
+19,Healthcare_19,United States,Miami,Healthcare,SNF,Consumer,41111,,2521,0,Midsized,1100,13200,7900,17,37,84,1,H,Y
+20,Healthcare_20,United States,Tampa,Healthcare,Hospital,Consumer,43505,43586,81,1,Midsized,1900,22800,11500,20,47,15,3,M,Y
+21,Healthcare_21,United States,Seattle,Healthcare,Hospital,Consumer,42049,,1583,0,Enterprise,2100,25200,13000,20,21,50,0,M,Y
+22,Healthcare_22,United States,Louisville,Healthcare,Insurance,Consumer,41973,43184,1211,1,Enterprise,2350,28200,10000,17,2,79,7,L,N
+23,Healthcare_23,United States,Dallas,Healthcare,Insurance,Consumer,41802,42934,1132,1,SMB,1900,22800,14500,17,46,35,0,L,N
+24,Healthcare_24,United States,Houston,Healthcare,Emergency,Consumer,42981,,651,0,Midsized,1950,23400,6700,19,16,98,2,L,N
+25,Healthcare_25,United States,Chicago,Healthcare,Ambulatory,Consumer,42935,42981,46,1,Startup,1350,16200,1500,19,21,22,7,H,Y
+26,Healthcare_26,United States,OKC,Healthcare,Ambulatory,Consumer,41607,,2025,0,Midsized,1550,18600,8900,19,2,31,3,M,Y
+27,Healthcare_27,United States,OKC,Healthcare,Home Health,Business,42099,42734,635,1,Midsized,1950,23400,4200,15,49,36,4,L,N
+28,Healthcare_28,United States,Louisville,Healthcare,Behavioral Health,Business,41315,,2317,0,Startup,1175,14100,2000,17,16,96,3,H,N
+29,Healthcare_29,United States,Tampa,Healthcare,SNF,Business,42862,,770,0,Startup,1600,19200,3000,17,50,95,7,L,Y
+30,Healthcare_30,United States,Memphis,Healthcare,Hospital,Business,40987,,2645,0,SMB,1000,12000,5000,20,1,97,3,M,Y
+31,Healthcare_31,United States,Charlotte,Healthcare,Hospital,Business,42166,43122,956,1,Enterprise,2200,26400,9000,20,18,99,9,L,N
+32,Healthcare_32,United States,Raleigh,Healthcare,SNF,Business,42500,42631,131,1,Midsized,1950,23400,8600,17,6,5,8,M,Y
+33,Healthcare_33,United States,Knoxville,Healthcare,Rural,Business,41970,42139,169,1,Startup,1300,15600,2600,17,44,23,2,H,N
+34,Healthcare_34,United States,Nashville,Healthcare,Urgent Care,Business,41834,43087,1253,1,Startup,1900,22800,4000,17,45,71,1,H,Y
+35,Technology_1,United States,San Francisco,Technology,Retail,Consumer,43601,,31,0,Midsized,1750,21000,3000,1,14,62,5,H,Y
+36,Technology_2,United States,Palo Alto,Technology,Cloud,Consumer,41995,43540,1545,1,Startup,1850,22200,3000,43,27,62,0,L,N
+37,Technology_3,United States,Boston,Technology,Infrastructure,Consumer,43461,,171,0,Enterprise,1075,12900,3000,3,1,37,6,H,N
+38,Technology_4,United States,New York,Technology,Infrastructure,Consumer,41628,,2004,0,SMB,990,11880,3000,3,40,40,1,M,N
+39,Technology_5,United States,Miami,Technology,Cloud,Consumer,42463,42698,235,1,Midsized,1850,22200,3000,43,40,81,4,L,N
+40,Technology_6,United States,San Jose,Technology,Analytics,Consumer,43252,43292,40,1,Startup,1295,15540,3000,10,28,10,6,M,N
+41,Technology_7,United States,San Diego,Technology,Chips,Consumer,42699,42904,205,1,Enterprise,1650,19800,3000,42,23,58,4,M,N
+42,Technology_8,United States,Bakersfield,Technology,Infrastructure,Consumer,41836,42179,343,1,SMB,1000,12000,3000,3,10,48,4,L,Y
+43,Technology_9,United States,Houston,Technology,Cloud,Consumer,42144,,1488,0,Midsized,1825,21900,3000,43,32,54,6,H,Y
+44,Technology_10,United States,Houston,Technology,Analytics,Consumer,41413,41434,21,1,Startup,1200,14400,3000,10,27,46,8,H,N
+45,Technology_11,United States,Nashville,Technology,Analytics,Consumer,42731,,901,0,Midsized,1275,15300,3000,10,8,8,4,H,Y
+46,Technology_12,United States,Detroit,Technology,Software,Consumer,41443,,2189,0,SMB,1300,15600,6000,10,4,33,1,M,Y
+47,Technology_13,United States,El Paso,Technology,Software,Business,42256,,1376,0,Enterprise,1325,15900,6000,10,25,41,5,M,Y
+48,Technology_14,United States,Austin,Technology,Software,Business,42843,42976,133,1,SMB,1300,15600,6000,10,46,35,7,H,Y
+49,Technology_15,United States,Austin,Technology,Cloud,Business,43411,43615,204,1,Midsized,3600,43200,6000,22,22,100,4,M,N
+50,Technology_16,United States,Austin,Technology,Cloud,Business,41590,,2042,0,Startup,3750,45000,6000,22,3,18,9,H,Y
+51,Technology_17,United States,Palo Alto,Technology,Infrastructure,Business,42669,,963,0,Enterprise,1050,12600,6000,3,30,9,6,L,N
+52,Technology_18,United States,San Diego,Technology,Chips,Business,43360,43537,177,1,SMB,1655,19860,6000,42,40,13,4,M,N
+53,Technology_19,United States,Boston,Technology,Biotech,Business,41358,42338,980,1,Midsized,1190,14280,6000,43,7,16,7,M,Y
+54,Technology_20,United States,New York,Technology,Cloud,Business,43537,,95,0,Startup,3500,42000,6000,22,17,41,3,M,Y
+55,O_&_G_1,United States,Houston,Oil and Gas,Exploration,Business,42593,,1039,0,Enterprise,1655,19860,8000,4,33,6,3,L,Y
+56,O_&_G_2,United States,Bakersfield,Oil and Gas,Retail,Business,41494,42740,1246,1,SMB,1500,18000,5110,2,48,6,2,L,Y
+57,O_&_G_3,United States,New Orleans,Oil and Gas,Exploration,Business,43394,43530,136,1,Midsized,1675,20100,5110,4,13,26,6,L,Y
+58,O_&_G_4,United States,Denver,Oil and Gas,Mid Stream,Business,41702,43245,1543,1,Startup,1525,18300,4000,6,19,73,9,M,N
+59,O_&_G_5,United States,Denver,Oil and Gas,Oil Field ,Business,43249,,383,0,Enterprise,1660,19920,7200,6,13,84,6,M,N
+60,O_&_G_6,United States,St. Louis,Oil and Gas,Oil Field ,Business,42363,,1269,0,SMB,1575,18900,4000,6,18,7,8,M,Y
+61,O_&_G_7,United States,St. Louis,Oil and Gas,Mid Stream,Business,42999,43164,165,1,Midsized,1650,19800,6350,6,44,28,2,H,Y
+62,O_&_G_8,United States,Miami,Oil and Gas,Retail,Business,42257,,1375,0,Startup,1400,16800,2950,2,33,13,7,M,Y
+63,O_&_G_9,United States,Austin,Oil and Gas,Oil Field ,Business,43277,,355,0,SMB,1500,18000,6500,6,20,53,4,L,Y
+64,O_&_G_10,United States,El Paso,Oil and Gas,Exploration,Business,42254,,1378,0,SMB,1580,18960,3550,4,18,51,2,L,Y
+65,O_&_G_11,United States,Houston,Oil and Gas,Exploration,Business,41722,,1910,0,Midsized,1535,18420,4100,4,39,0,9,L,Y
+66,O_&_G_12,United States,Toledo,Oil and Gas,Retail,Business,42043,,1589,0,Enterprise,1675,20100,10500,2,42,85,3,M,Y
+67,O_&_G_13,United States,New Orleans,Oil and Gas,Exploration,Business,42799,43542,743,1,Midsized,1625,19500,6000,4,9,51,6,H,N
+68,O_&_G_14,United States,Denver,Oil and Gas,Exploration,Consumer,41469,,2163,0,Enterprise,1600,19200,9000,4,29,71,10,H,Y
+69,O_&_G_15,United States,Long View,Oil and Gas,Oil Field ,Consumer,42057,,1575,0,SMB,1530,18360,2850,6,6,20,7,M,N
+70,O_&_G_16,United States,Galveston,Oil and Gas,Exploration,Consumer,40969,,2663,0,Midsized,1000,12000,5000,4,5,64,2,L,Y
+71,O_&_G_17,United States,Tyler,Oil and Gas,Oil Field ,Consumer,43364,43384,20,1,Enterprise,1678,20136,8200,6,21,33,10,L,Y
+72,O_&_G_18,United States,Chicago,Oil and Gas,Retail,Consumer,41341,,2291,0,Midsized,1180,14160,6500,2,27,42,2,H,N
+73,O_&_G_19,United States,Chicago,Oil and Gas,Retail,Business,41515,43329,1814,1,Enterprise,1500,18000,8100,2,46,76,8,L,Y
+74,O_&_G_20,United States,Dallas,Oil and Gas,Exploration,Business,42087,,1545,0,SMB,1525,18300,2250,4,31,84,9,L,N
+75,O_&_G_21,United States,Dallas,Oil and Gas,Exploration,Business,43215,43220,5,1,Enterprise,1655,19860,12000,4,10,64,7,H,Y
+76,Banking_1,United States,San Francisco,Banking,Venture,Business,41562,,2070,0,Midsized,1025,12300,4500,7,7,97,10,L,Y
+77,Banking_2,United States,New York,Banking,Investment,Business,42040,,1592,0,Enterprise,1150,13800,4000,7,12,0,1,H,N
+78,Banking_3,United States,Minneapolis,Banking,Retail,Business,41256,,2376,0,SMB,1150,13800,1125,7,18,43,3,L,Y
+79,Banking_4,United States,Minneapolis,Banking,Retail,Business,42898,,734,0,Midsized,1300,15600,3400,7,27,37,4,H,N
+80,Banking_5,United States,Birmingham,Banking,Retail,Business,42111,,1521,0,Enterprise,1200,14400,7200,7,23,56,2,M,Y
+81,Banking_6,United States,Charlotte,Banking,Investment,Business,41781,,1851,0,Midsized,1100,13200,2600,7,29,58,10,L,Y
+82,Banking_7,United States,Charlotte,Banking,Investment,Business,41585,,2047,0,Enterprise,1025,12300,1900,7,2,15,0,M,N
+83,Banking_8,United States,Detroit,Banking,Retail,Business,41001,,2631,0,SMB,1050,12600,1825,7,33,34,0,H,N
+84,Banking_9,United States,Dallas,Banking,Investment,Business,41678,,1954,0,Enterprise,1100,13200,9000,7,14,45,9,H,Y
+85,Banking_10,United States,New York,Banking,Investment,Business,42011,43458,1447,1,Midsized,1125,13500,7200,7,12,52,5,M,Y
+86,Banking_11,United States,San Francisco,Banking,Investment,Business,42076,,1556,0,Enterprise,1175,14100,6450,7,4,35,2,L,N
+87,Banking_12,United States,Miami,Banking,Retail,Business,41674,,1958,0,SMB,1100,13200,5500,7,29,65,7,M,N
+88,Banking_13,United States,Houston,Banking,Retail,Business,41266,42585,1319,1,Midsized,1175,14100,6850,7,36,72,5,L,Y
+89,Healthcare_35,United States,Detroit,Healthcare,Emergency,Business,43326,,306,0,Enterprise,2400,28800,5000,19,44,82,3,H,N
+90,Healthcare_36,United States,Grand Rapids,Healthcare,Hospice,Business,42921,,711,0,Midsized,1950,23400,6700,15,34,58,5,M,Y
+91,Healthcare_37,United States,Green Bay,Healthcare,SNF,Business,41794,,1838,0,Enterprise,1700,20400,3000,17,25,11,6,L,N
+92,Healthcare_38,United States,Madison,Healthcare,Hospital,Business,43458,,174,0,SMB,1700,20400,1900,20,8,20,3,M,Y
+93,Healthcare_39,United States,Toledo,Healthcare,Behavioral Health,Business,42816,43458,642,1,Enterprise,1900,22800,8000,17,47,9,5,M,N
+94,Healthcare_40,United States,Seattle,Healthcare,Dialysis ,Business,41709,42960,1251,1,SMB,3250,39000,2500,22,34,0,0,M,Y
+95,Healthcare_41,United States,Pheonix,Healthcare,Hospital,Business,41897,43356,1459,1,Midsized,1400,16800,14000,20,50,68,10,M,Y
+96,Healthcare_42,United States,Las Vegas,Healthcare,Home Health,Business,41346,42008,662,1,Enterprise,1185,14220,5000,15,40,2,4,H,Y
+97,Healthcare_43,United States,Philidelphia,Healthcare,Hospice,Business,42585,,1047,0,Midsized,1950,23400,7800,15,26,85,6,H,N
+98,Healthcare_44,United States,Pittsburg,Healthcare,Urgent Care,Business,41111,,2521,0,Enterprise,1100,13200,6000,17,41,15,7,L,Y
+99,Healthcare_45,United States,Columbus,Healthcare,Urgent Care,Business,42008,,1624,0,SMB,1800,21600,7000,17,38,37,6,L,N
+100,Healthcare_46,United States,Columbia,Healthcare,Behavioral Health,Business,41924,42008,84,1,SMB,1750,21000,2900,17,1,19,1,H,N

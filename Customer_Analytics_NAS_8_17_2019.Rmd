@@ -1,0 +1,747 @@
+---
+title: "Leverage your customer data and look like a Rock Star."
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+setwd("C:/Users/JayRoy/Documents/NAS_Customer Analytics")
+knitr::opts_chunk$set(out.width='1000px', dpi=200)
+```
+
+# install libraries
+```{r}
+library(tidyverse)
+library(dplyr)
+library(lubridate)
+library(e1071)
+library(DescTools)
+library(janitor)
+library(rcompanion)
+library(sqldf)
+
+library(survival)
+library(survminer)
+library(survMisc)
+
+library(NPS)
+
+library(cluster)
+library(flexclust)
+
+library(SMCRM)
+
+library(StatMatch)
+library(ggplot2)
+library(gridExtra)
+library(factoextra)
+
+```
+# Goal: ## What's the Company's strategy?
+Understanding what type of business are we? High Volume vs.Highly profitable?
+
+Pull in datafile (csv) from your CRM and other data sources.
+
+We typically write dates with nomenclature ("9/9/2019") and in Excel, behind the scenes stores as a numeric. When imported in this manner it will come into R as a factor. (Yes, scream loudly!!)
+
+Looking at the csv file (CRM.csv) - notice dates columns in Excel are numeric and when we import them, they come into R as integers e.g. (Start_Date).(Yes, I cheated and saved myself a lot of time and headache!)
+
+Good resouce on dates https://www.r-bloggers.com/date-formats-in-r/  (Importing Dates from Numeric Format)
+
+FYI: Dates in Excel are saved as numeric. Excel begins counting from 1900-01-01 (zero) vs R starts at 1970-01-01. (Data wrangling required)
+
+```{r}
+
+## rm(list = ls()) ## Clean out all items from environment.
+```
+# Perform some data profiling and  descriptive statistics to get context of our business.
+
+```{r, echo=FALSE, fig.height=3.0, fig.width=9}
+mktseg <- read.csv("C:/Users/JayRoy/Documents/NAS_Customer Analytics/CRM.csv")
+
+##View(mktseg)
+str(mktseg)
+dim(mktseg)
+
+table(mktseg$Customer_Size)
+prop.table(table(mktseg$Customer_Size)) 
+## Number and Type of customers
+
+table(mktseg$Customizable)
+## How customers have desires of customizable software?  
+
+hist(mktseg$Advertising.Costs)
+hist(mktseg$MRR)
+hist(mktseg$Total_Revenue, xlab = " Revenue", main = "Total Revenue", breaks=20)
+## OR
+MS_initial <- density(mktseg$Total_Revenue)
+plot (MS_initial, xlab='Total Revenue', ylab='Frequency', main='Customer Revenue') #default
+
+skewness(mktseg$Total_Revenue) ## Positive skew
+## <Need to add a smooth line on hist>
+kurtosis(mktseg$Total_Revenue) ## 3.5 >3 A non-normal disMS_initialibution.
+
+summary(mktseg$Total_Revenue)
+## Median less than mean (more number of customers but some customers have  )
+
+mktseg$Start_Date_1 <- as.Date(as.numeric(mktseg$Start_Date_1),origin = "1899-12-30")
+
+mktseg$End_Date_1[is.na(mktseg$End_Date_1)] <- 43717
+
+mktseg$End_Date_1 <- as.Date(as.numeric(mktseg$End_Date_1),origin = "1899-12-31")
+
+hist(mktseg$Start_Date_1,breaks = "years", xlab = "years")
+table(substring(mktseg$Start_Date_1,1,4))
+## Shows the trend of customers by year.
+
+### Let's review Sales Persons.
+table(mktseg$Sales_Person,mktseg$Total_Revenue)
+## Details of sales made by each sales person
+agg =select(mktseg,Sales_Person,Total_Revenue)
+## Aggregate by SP
+
+sp <- aggregate(agg,by=list(agg$Sales_Person),FUN = mean )
+sp<-  arrange(sp,-sp$Total_Revenue)
+## Total Revenue by Sales person 
+hist(sp$Total_Revenue) ## How are our sales persons doing?
+## Shows how effective are sales personnel are.
+
+```
+# Perform market segmentation (clustering) on all variables including MRR & Total Revenue and Adv)
+```{r}
+mktseg<- mktseg[,-1:-12] ## Removed non-numeric columns
+mktseg<- mktseg[,-8:-9]
+
+```
+# Perform intial clustering by hierarchical clustering: 
+```{r, echo=FALSE,fig.height=3.0, fig.width=10}
+d <- dist(mktseg, method = 'euclidean')
+MS_initial.hclust <- hclust(d,method ='ward.D2')
+# Creates the hierarchical cluster 
+
+plot(MS_initial.hclust) ## looks 5 major clusters observed.
+rect.hclust(MS_initial.hclust,k=5)## run the plot and rect statements together
+# Plot the clusters and looks 5 major clusters observed.
+
+barchart(MS_initial.hclust,mktseg,k=5)
+## Bar chart shows all 5 clusters are driven by Total Revenue and Ad Cost because scale of these two variables are so much greater than balance of the rest. With scale being different, it masks the problems of the business. Let's drill down.
+group_MS_initial.hclust <- cutree(MS_initial.hclust,k=5)
+table(group_MS_initial.hclust)
+# Identifies the number of customers per segment.
+
+# Below describes each cluster and it number associated percentage.
+# Within each cluster, the dark red dots correspond to the total mean values across all respondents; the bars indicate the mean values within each one of the segments. 
+
+```
+## To get to the heart of the matter of what variables drives performance, use  Principal Components analysis to identify key variable to cluster on.
+```{r}
+mktseg_pc <- read.csv("C:/Users/JayRoy/Documents/NAS_Customer Analytics/CRM.csv")
+
+mktseg_pc<- mktseg_pc[,-1:-12] ## Removed non-numeric columns
+mktseg_pc<- mktseg_pc[,-8:-9] ## Removed non-numeric columns (factors)
+
+
+ms.pca <- prcomp(mktseg_pc,center= T, scale. = T) ## Perform principal components analysis and standardize data.
+ms.pca
+# MRR (Monthly Recurring Revenue , Total revenue = MRR *12)
+
+# Because the variables MRR/Total Revenue & Advertising are on so much of a larger scale, it does not provide any additional information. Next step to remove those variables and reperform clustering.
+```
+## Reperform hierarchical clustering without variables MRR/Total Revenue and Adversting. 
+```{r, echo=FALSE, fig.height=2.7, fig.width=9}
+mktseg2 <- read.csv("C:/Users/JayRoy/Documents/NAS_Customer Analytics/CRM.csv")
+mktseg2<- mktseg2[,c(-1:-15,-20,-21)] ## Removed non-numeric columns
+
+mktseg2 <- scale(mktseg2)
+d2 <- dist(mktseg2, method = 'euclidean')
+MS2_hclust <- hclust(d2,method ='ward.D2')
+
+plot(MS2_hclust)
+rect.hclust(MS2_hclust,k=5)## run the plot and rect statements together
+## Looks like 5 clusters without the Total Revenue and Advertising
+barchart(MS2_hclust,mktseg2,k=5)
+## Review the clusters (segments) 
+group_MS2_hclust <- cutree(MS2_hclust,k=5)
+table(group_MS2_hclust)
+## Identifies the number of customers per segment.
+```
+## Results: Overall, all 5 segments point to excessive complaints. In cluster 4 - sales people may make a difference in this segment.
+
+## Statistically speaking we want DS or marketing personnel to be able to identify stable clusters to determine natural, distinct and well-seaprated market segments (Y or N - if answer is No then iterative solution(s) needed until gives us the most useful segments to the organization).
+
+## Looks like there are differences between segments by looking at dendogram and validated by barchart.
+
+## Looks like there are differences between clusters by looking at dendogram and validated by barchart.
+
+## After reviewing some descriptive analytics and 2 unsupervised methods, we know the following:
+
+## Characterizing the business we are prodominantly a volume business but there appears to be pockets of high-margin business and in certain segments sales definitely make a difference.<Leadership team has to make some decisions on where do we play(markets served) and type of services offered. <Levels of service(Gold/Silver/Bronze)   
+
+## Clearly, our customers are pretty unhappy based number of complaints, website traffic (Segment 3) and associated NPS scores.All three of these metrics are typically symptoms/drivers of customer attrition. But we serve different verticals and sub-markets and we need to pin point these customers are reach out to them in better manner.  
+
+## Typically, clustering is based on numeric data however, you can cluster on factor variables per MSA package. Let's review an example. <You may find this at the last section of this document. It requires a non-cran library to be installed
+___________________________________________________________________________________________________________________________
+## NPS Analysis:
+
+Are there customers that are unhappy? Data to support this?
+Review 1) overall NPS score 2) yearly trend and 3) NPS details.
+
+Use package nps
+
+Pull in data file:
+```{r}
+nps_data<- read.csv("C:/Users/JayRoy/Documents/NAS_Customer Analytics/NPS.csv")
+
+View(nps_data)
+```
+
+## Transform/pre-process NPS data
+
+```{r}
+nps_data$Start_Date_1 <- as.Date(as.numeric(nps_data$Start_Date_1),origin = "1899-12-30")
+
+nps_data$End_Date_1[is.na(nps_data$End_Date_1)] <- 43717
+
+nps_data$End_Date_1 <- as.Date(as.numeric(nps_data$End_Date_1),origin = "1899-12-30")
+
+nps_data$NPS_Score <- as.numeric(nps_data$NPS_Score)
+# Convert scores to numeric for usage of NPS package.
+
+#nps_data$NPS_Score
+hist(nps_data$NPS_Score, breaks = 10, xlab = "NPS Score", main = "NPS Scores")
+#table(nps_data$NPS_Score,npc(nps_data$NPS_Score))
+
+summary(npc(nps_data$NPS_Score))
+# Wow, 4-5 times Detractors to Promoters. Not good news
+
+nps(nps_data$NPS_Score) ## Use nps function to calculate overall NPS score from beginning to end of duration of time.
+## Overall NPS over years = -54 Range (-100 to +100)
+
+```
+
+## Review of year to year change:
+```{r,echo=FALSE,height=3.0, fig.width=9 }
+nps_data$year <- as.factor(year(nps_data$Start_Date_1))
+#  Create a year variable
+
+nps_yearly_change <- aggregate(nps_data$NPS_Score, list(nps_data$year), FUN = nps, nps_data$NPS_Score)
+
+
+# Trend of NPS over the years < We Suck!>
+ggplot(nps_yearly_change) + 
+  geom_col(aes(x=as.factor(Group.1), y=x, fill=as.factor(Group.1)), width=0.5) + 
+  xlab("Year") + 
+  ylab("NPS") + 
+  geom_text(aes(x=as.factor(Group.1), y=x, label=round(x,2)),  vjust = 1, hjust = 1) +
+  scale_fill_brewer("Year", palette = "Set1") + ggtitle("Overall NPS")
+
+nps_data$category <- cut(nps_data$NPS_Score, breaks = c(-1, 6, 8, 10), labels = c("Detractor","Passive", "Promoter"))
+
+nps_category<- nps_data %>%group_by(year,category)%>%summarize(cat_count=length(category)) 
+
+
+ggplot(nps_category,aes(x=year,y=cat_count, fill=category)) +geom_bar(position=position_dodge(width = NULL),stat = "identity")+ geom_col()+ scale_fill_brewer("Year", palette = "Set1") +geom_text(aes(x=year, y=cat_count, label=round(cat_count,2)),position=position_dodge(width =.5 ))+ ggtitle("Category Breakdown NPS")+ xlab("Year")+ ylab("Category Count")
+# Creates NPS Yearly plot
+
+# Interpretation: Large disipation of Promoters (Fans) and equally large increase in unhappy customers. So customer(NPS) data may be pointing to retention rates now and in the future. Let's explore this.
+```
+## Survival Analysis 
+Goal: What is our retention rate? But how do we get a baseline or direction before we can answer that question?
+
+Use survival,survminer,survMisc packages
+
+2 Models to calculate customer retention (K-M & Cox) building a survival/hazard schedule/curve
+
+Is there a difference in retention rates in our customer data? 
+```{r}
+survobj <- read.csv("C:/Users/JayRoy/Documents/NAS_Customer Analytics/nas_survival.csv")
+# {r, echo=FALSE,height=3.0, fig.width=9 }
+#View(survobj)
+
+# Pull in data from CRM but various ways to do.
+survobj$Start_Date <- as.Date(as.numeric(survobj$Start_Date),origin = "1899-12-30")
+
+survobj$End_Date[is.na(survobj$End_Date)] <- 43717 ## Excel function to calc date @ 9/9/2019
+
+survobj$End_Date <- as.Date(as.numeric(survobj$End_Date),origin = "1899-12-30")
+
+survobj$TTE <- survobj$End_Date - survobj$Start_Date ## Calcualtes duration of client time with 9/9 being the observation date. 
+
+```
+## Build a Kaplan-Meier model: comparing two or more groups
+
+1) Build survival function using surfit
+
+use ~1 in formula in order to not filter on any strata(group)
+
+2) Build KM survival models 
+
+```{r}
+Y <- Surv(survobj$TTE, survobj$Churned==1)
+##Response variable Y (survival object)
+
+km.model <- survfit(Y~1)
+## surfit creates your survival curve
+
+summary(km.model)
+## Survival schedule
+
+plot(km.model,mark.time = F,  conf.int = F, lty = "solid", lwd = 3, col = "black", main="Customer Retention" ,xlab = "Survival Time in Days",ylab ="Survival Probability" )
+## Using the Kaplan-Meier model, we can estimate the future survival of our customers.
+
+km.clienttype <- survfit(Y~survobj$Type_of_Customer)
+
+km.clienttype
+
+km.customersize <- survfit(Y~survobj$Customer_Size)
+
+km.customersize
+
+##summary(km.customersize)
+
+table(survobj$Customer_Size)
+
+prop.table(table(survobj$Customer_Size))
+
+table(survobj$Churned)
+## Lots of churned customers - not surprising with low NPS, high customer complaints, etc.
+
+prop.table(table(survobj$Churned))
+
+prop.table(table(survobj$Customer_Size,survobj$Churned))
+# 45% churn divided into customer size.
+```
+## Plot Overall Survival Curve and then use Customer Size as your strata to observe differences in Retention by size of customer.
+```{r}
+
+plot(km.model,mark.time = F,  conf.int = F, lty = "solid", lwd = 3, col = "black", main="Customer Retention", xlab = "Survival Time in Days",ylab ="Survival Probability" )
+# Plot Overall Retention curve from above.
+
+par(new=T)
+
+plot(km.customersize, conf.int = F, lty = c("solid","dashed","dotted","longdash"), lwd = 3,col=c("red","purple", "green","blue"),main="Customer Retention",xlab = "Survival Time in Days",ylab ="Survival Probability" )
+
+legend("bottomleft",c("Enterprise", "Midsized","SMB", "Startup"),lty = c("solid","dashed","dotted","longdash"),col=c("red","purple", "green","blue"))
+
+survminer::ggsurvplot(
+km.customersize, data = survobj, 
+    xlab = "Days",
+    ylab = "Overall survival probability",
+    legend.title = "Customer Size",
+    legend.labs = c("Enterprise", "Midsized","SMB", "Startup"),
+    ##break.x.by = 750, 
+    censor = FALSE,
+    risk.table = F,
+tables.height = 0.5,
+    risk.table.y.text = F)
+
+## Run two plots above at same time.
+
+## Results/Insights: Customer Size matters on Retention Rates 
+## Insight #2: Startup ventures as customers should be avoided because retention rate is low and customers attrition rate is immediate.  
+
+```
+
+
+```{r,echo=FALSE,height=3.0, fig.width=9}
+## Familiar with ggplot, can use function to do the same. 
+fit <- survfit(Surv(survobj$TTE, survobj$Churned==1)~survobj$Customer_Size)
+
+ggsurv <- ggsurvplot(fit, data=survobj, risk.table = TRUE, tables.height = .6)
+
+ggpar(
+  ggsurv,
+  font.title    = c(6, "bold", "darkblue"),  
+  font.x        = c(6, "bold.italic", "red"),          
+  font.y        = c(6, "bold.italic", "darkred")
+)
+```
+
+## Cox Model: Base Hazard and 1 predictor variable
+
+1. Build surv object:
+2. Build baseline curve and plot
+3. Build cox model
+
+## Build surv object and model:
+```{r}
+CoxY <- coxph(Surv(survobj$TTE,survobj$Churned)~factor(survobj$Customer_Size), data=survobj)
+
+Cox_cs <- survfit(Surv(survobj$TTE,survobj$Churned)~factor(survobj$Customer_Size), data=survobj)
+## Build the survival schedule and calling Cox_Y will give your coefficients 
+```
+## You can Build Baseline Curve for the Customer Size aspect and get more granular:
+```{r}
+cox_base_haz <- survfit(CoxY)
+
+### summary(cox_base_haz)
+
+plot(cox_base_haz,ymin =0.5,conf.int = F,main="Overall Customer Retention ", xlab = "Time in Days",ylab ="Overall Survival Probability")
+
+## Get detailed level by changing some of the arguments.
+
+```
+## Plot survival curve Cox model with 1 predictor variable
+
+## Survival Curve by Industry - Does industry type impact survival?
+```{r}
+cox_fit_I = coxph(Surv(survobj$TTE, survobj$Churned)~ factor(survobj$Industry), data =survobj)
+## Build the model
+
+table(survobj$Industry)
+
+
+I <- survfit(Surv(survobj$TTE, survobj$Churned)~ factor(survobj$Industry), data=survobj)
+## Build survival schedule
+
+summary(cox_fit_I)
+
+summary(I) ## Gives you the survival curves by Industry type.  
+
+survminer::ggsurvplot(
+I, data = survobj, 
+    xlab = "Days",
+    ylab = "Survival probability",
+    legend.title = "Industry effect on Retention",
+    legend.labs = c("Banking", "Healthcare", "Oil and Gas", "Technology"),
+    ##break.x.by = 750, 
+    censor = FALSE,
+    risk.table = F,
+tables.height = 0.5,
+    risk.table.y.text = F)
+## plot survival(retention) curve
+
+## OR Use ggplot and map out numeric details along with graphical elements.
+
+ggsurv_I <- ggsurvplot(I, data=survobj, risk.table = TRUE, tables.height = .41)
+
+ggpar(
+  ggsurv_I,
+  font.title    = c(4, "bold", "darkblue"),  
+  font.x        = c(6, "bold.italic", "red"),          
+  font.y        = c(6, "bold.italic", "darkred")
+)
+
+```
+## Survival Curve by Vertical - Does Vertical type impact survival?
+```{r,echo=FALSE,height=3.0, fig.width=9 }
+
+cox_fit_V = coxph(Surv(survobj$TTE, survobj$Churned)~ factor(survobj$Vertical), data =survobj)
+
+table(survobj$Vertical)
+
+V <- survfit(Surv(survobj$TTE, survobj$Churned)~ factor(survobj$Vertical), data=survobj)
+
+survminer::ggsurvplot(
+V, data = survobj, 
+    xlab = "Days",
+    ylab = "Survival probability",
+    legend.title = "Vertical effect on Retention",
+    ##legend.labs = c("Banking", "Healthcare", "Oil and Gas", "Technology"),
+    ##break.x.by = 750, 
+    censor = FALSE,
+    risk.table = F,
+tables.height = 0.5,
+    risk.table.y.text = F)
+### Way crazy!!!
+
+##Let's cut the data managable.
+
+survobj_h <- survobj
+survobj_h <- survobj_h[survobj_h$Industry %like% "Healthcare",]
+
+cox_fit_hcv = coxph(Surv(survobj_h$TTE, survobj_h$Churned)~ factor(survobj_h$Vertical), data =survobj_h)
+
+##table(survobj_h$Vertical)
+
+hcv <- survfit(Surv(survobj_h$TTE, survobj_h$Churned)~ factor(survobj_h$Vertical), data=survobj_h)
+
+table(survobj_h$Vertical)
+
+survminer::ggsurvplot(
+hcv, data = survobj_h, 
+    xlab = "Days",
+    ylab = "Survival probability",
+    legend.title = "Vertical effect on Retention",
+    censor = FALSE,
+    risk.table = F,
+tables.height = 0.5,
+    risk.table.y.text = F)
+
+## Results: There are some healthcare verticals better than others.
+
+## Next steps you will have to calculate actual retention numbers(percentages) and develop your cohorts so you can compare them.
+```
+## CLV
+
+##Example 1:
+
+Use case 1: Assume you have CLV values computed, what actions could you take better utilize this metric? <A: Use CLV to refine your customer segementation and target based on CLVs.
+
+Perform 1) intial exploratory data 2) Perform kmeans/hclust clustering to determine segments based on relationships inclusive of CLV...  
+
+```{r}
+library(SMCRM)
+
+data(customerAcquisition)
+summary(customerAcquisition)
+
+cust_CLV<- customerAcquisition[,c(1,4)]
+cust_CLV$clv <- cust_CLV$clv*1000
+## Transform values into thousands of dollars
+
+cust_CLV <- as.data.frame(cust_CLV)
+plot(cust_CLV$customer,cust_CLV$clv, main="Why we are in trouble?", xlab = "Customers", ylab = "Customer Lifetime Values")
+## By observing the plot, What does this tell you?
+
+clv_d <- cust_CLV[order(-clv),]
+clv_d <- as.data.frame(cust_CLV)
+clv_d <- clv_d[order(-clv),]
+summary(clv_d)
+clv_values <- subset(clv_d,clv!=0)
+## Create df with only positive values.
+
+hist(customerAcquisition$clv)
+## By observing the histogram, What does this tell you?
+
+table(customerAcquisition$clv>0) 
+## the majority of your customers add no long term value to the enterprise and wasting a lot of resources supporting them. 
+## Your marketing efforts need to better target valuable customers up front or next task is to identify how to improve CLV for a particular set of segments.
+
+plot(clv_values$customer,clv_values$clv,main="CLVs greater than zero", xlab = "Customers", ylab = "Customer Lifetime Values")
+## plot the CLVs that are greter than zero  
+
+summary(clv_values$clv)
+## summary of the positive CLVs
+
+sum(clv_values$clv) 
+## Total CLV=$888,206 for CLVs greater than zero.
+
+clv_8020 <- 888206*.80 ## 80% of CLV= $710565
+#Using the pareto rule, do 20% of customers make up 80% profit?
+
+clv_values$cumsum <- cumsum(clv_values$clv)
+
+clv_values$Row_ID <- seq.int(nrow(clv_values))
+## Add row numbers
+
+View(clv_values)
+
+nrow(clv_values[clv_values$cumsum<710565,])
+## In this case 80/20 rules does not apply. (It takes 102 customers / 135 customers to make up 80% of CLV.
+
+```
+```{r}
+## Create a kmeans cluster plot including CLV variable.
+data(customerAcquisition)
+km_data <- customerAcquisition[,c(4,5,7,10,12)]
+
+km_data_scaled <- scale(km_data)
+
+set.seed(1234)
+wss <- function(k) {
+  kmeans(km_data_scaled, k, nstart = 100 )$tot.withinss
+}
+k_values <- 1:15
+wss_values <- map_dbl(k_values, wss)
+#Determining optimal clusters using elbow method.
+
+plot(k_values, wss_values,
+       type="b", pch = 19, frame = FALSE, 
+       xlab="Number of clusters K",
+       ylab="Total within-clusters sum of squares")
+
+km_8clusters <- kmeans(km_data_scaled,centers = 8, nstart = 100)
+
+kmplot_8 <- fviz_cluster(km_8clusters,data = km_data_scaled)
+
+kmplot_8 ## View Cluster plot
+km_8clusters$size
+
+#Looking at each cluster,kmeans segments 8 clusters with similar customer profiles with ranges CLVs=0 to CLVs ~9K
+#Graphic helps to prioritize the important customers versus less important customers.
+
+```
+#Example 2: Simple CLV example to determine the overall value of your customers and broken down by recency of the segments purchasing.
+```{r}
+##rm(list = ls())
+data = read.delim("C:/Users/JayRoy/Documents/NAS_Customer Analytics/purchases.txt", header = FALSE, sep = '\t', dec = '.')
+
+colnames(data) = c('customer_id', 'purchase_amount', 'date_of_purchase')
+data$date_of_purchase = as.Date(data$date_of_purchase, "%Y-%m-%d")
+data$year_of_purchase = as.numeric(format(data$date_of_purchase, "%Y"))
+data$days_since= as.numeric(difftime(time1 = "2016-01-01",time2 = data$date_of_purchase,units = "days"))
+
+library(sqldf)
+
+customers_2015 <- sqldf("select customer_id,min(days_since) as 'recency', max(days_since) as 'first purchase', count(*) as 'frequency', avg(purchase_amount) as 'amount' from data group by customer_id")
+
+##View(customers_2015)
+
+customers_2015 <- sqldf("select customer_id, min(days_since) as 'recency', max(days_since) as 'first purchase', count(*) as 'frequency', avg(purchase_amount) as 'amount' from data group by customer_id")
+
+customers_2015$segment <- "N/A"
+
+#Build segments based on recency.
+
+customers_2015$segment[which(customers_2015$recency>365*3)] = 'inactive'
+
+customers_2015$segment[which(customers_2015$recency<=365*3 & customers_2015$recency>365*2)]='cold'
+
+customers_2015$segment[which(customers_2015$recency<=365*2 & customers_2015$recency>365*1)]='warm'
+
+customers_2015$segment[which(customers_2015$recency <= 365)] = "active"
+
+customers_2015$segment[which(customers_2015$segment=="warm" & customers_2015$`first purchase`<=365*2)]='new warm'
+customers_2015$segment[which(customers_2015$segment == "warm" & customers_2015$amount <100)]="warm low value"
+customers_2015$segment[which(customers_2015$segment == "warm" & customers_2015$amount >= 100)] = "warm high value"
+customers_2015$segment[which(customers_2015$segment == "active" & customers_2015$first_purchase <= 365)] = "new active"
+customers_2015$segment[which(customers_2015$segment == "active" & customers_2015$amount < 100)] = "active low value"
+customers_2015$segment[which(customers_2015$segment == "active" & customers_2015$amount >= 100)] = "active high value"
+
+customers_2015$segment = factor(x = customers_2015$segment, levels = c("inactive", "cold",
+"warm high value", "warm low value", "new warm","active high value", "active low value", "new active"))
+View(customers_2015)
+```
+## Build customer database on 2014
+```{r}
+customers_2014 = sqldf("SELECT customer_id, MIN(days_since) - 365 AS 'recency', MAX(days_since) - 365 as 'first_purchase', COUNT(*) AS 'frequency', AVG(purchase_amount) as 'amount'
+FROM data
+WHERE days_since > 365
+GROUP BY 1")
+
+customers_2014$segment = "NA"
+
+customers_2014$segment[which(customers_2014$recency > 365*3)] = "inactive"
+customers_2014$segment[which(customers_2014$recency <= 365*3 & customers_2014$recency > 365*2)] = "cold"
+customers_2014$segment[which(customers_2014$recency <= 365*2 & customers_2014$recency > 365*1)] = "warm"
+customers_2014$segment[which(customers_2014$recency <= 365)] = "active"
+customers_2014$segment[which(customers_2014$segment == "warm" & customers_2014$first_purchase <= 365*2)] = "new warm"
+
+customers_2014$segment[which(customers_2014$segment == "warm" & customers_2014$amount < 100)] = "warm low value"
+
+customers_2014$segment[which(customers_2014$segment == "warm" & customers_2014$amount >= 100)] = "warm high value"
+
+customers_2014$segment[which(customers_2014$segment == "active" & customers_2014$first_purchase <= 365)] = "new active"
+
+customers_2014$segment[which(customers_2014$segment == "active" & customers_2014$amount < 100)] = "active low value"
+
+customers_2014$segment[which(customers_2014$segment == "active" & customers_2014$amount >= 100)] = "active high value"
+
+customers_2014$segment = factor(x = customers_2014$segment, levels = c("inactive", "cold",
+"warm high value", "warm low value", "new warm","active high value", "active low value", "new active"))
+
+View(customers_2014)
+```
+## Compute the present value of the worth of the customers (CLV) at a point in time.
+```{r}
+new_data <- merge(x=customers_2014,y=customers_2015, by = "customer_id", all.x =TRUE )
+#Join both customer tables together.
+
+transition <- table(new_data$segment.x, new_data$segment.y)
+
+print(transition)
+transition <- transition/rowSums(transition)
+print(transition)
+
+segments <- matrix(nrow = 8, ncol=11)
+print(segments)
+
+segments[,1] <- table(customers_2015$segment)
+print(segments)
+
+table(customers_2015$segment)
+
+colnames(segments) <- 2015:2025
+
+row.names(segments) = levels(customers_2015$segment)
+print(segments)
+
+for (i in 2:11) {
+segments[, i] = segments[, i-1] %*% transition
+# segments[8,i] = segments[8,i-1]+1000
+}
+
+segments
+
+barplot(segments[1, ])
+barplot(segments[2, ])
+print(round(segments))
+
+yearly_revenue = c(0, 0, 0, 0, 0, 323.57, 52.31, 79.17)
+revenue_per_segment = yearly_revenue * segments
+print(revenue_per_segment)
+
+yearly_revenue <- colSums(revenue_per_segment)
+View(segments)
+print(round(yearly_revenue))
+barplot(yearly_revenue)
+
+cumulated_revenue = cumsum(yearly_revenue)
+print(round(cumulated_revenue))
+barplot(cumulated_revenue)
+
+discount_rate = 0.10
+discount = 1 / ((1 + discount_rate) ^ ((1:11) - 1))
+print(discount)
+#Compute the discount rate for the periods
+
+disc_yearly_revenue = yearly_revenue * discount
+print(round(disc_yearly_revenue))
+barplot(disc_yearly_revenue)
+
+disc_cumulated_revenue = cumsum(disc_yearly_revenue)
+print(round(disc_cumulated_revenue))
+barplot(disc_cumulated_revenue)
+
+print(disc_cumulated_revenue[11] - yearly_revenue[1])
+print(disc_cumulated_revenue[11] )
+print(yearly_revenue[1])
+# Total CLV of customers@ 2015 is $509,143
+
+# Next task would be to monitor the year to year trends based on CLVs.
+```
+```
+Market Segmentation Analysis ("MSA")
+
+# library(MSA) ## Non Cran library (Need of obtain this from website:http://www.marketsegmentationanalysis.org/ )
+## R> install.packages("MSA_0.3.tar.gz", repos = NULL, type = "source")
+
+```{r}
+library(MSA) 
+## Non Cran library (Need of obtain this from website:http://www.marketsegmentationanalysis.org/ )
+## R> install.packages("MSA_0.3.tar.gz", repos = NULL, type = "source")
+
+##help(package = MSA)
+
+##ls("package:MSA") ## 4 specific functions within MSA besides the data sets.
+
+##data(package = "MSA")
+
+## Remember Slide 25 (Sources of Customer Data Leading to Customer Insights)
+
+##For this case study, imagine that you are McDonald’s, and you would want to know if consumer segments exist that have a distinctly different image of McDonald’s. Understanding such systematic differences of brand perceptions by marketsegmentsinformswhichmarketsegmentstofocuson,andwhatmessagesto communicate to them. We can choose to focus on market segments with a positive perception, and strengthen the positive perception. Or we can choose to focus on a market segment that currently perceives McDonald’s in a negative way. In this case, we want to understand the key drivers of the negative perception, and modify them.
+
+## Illustration of market segmentation by survey variables that are binary with Yes and No responses.
+## https://link.springer.com/book/10.1007/978-981-10-8818-6 (Download the book)
+```
+```{r}
+data("mcdonalds", package = "MSA")
+names(mcdonalds) ## Survey names as factors 
+MD.x <- as.matrix(mcdonalds[, 1:11])
+##MD.x
+MD.x <- (MD.x == "Yes") + 0 
+##(transform from boolean to binary)
+round(colMeans(MD.x), 2)
+
+set.seed(1234) 
+MD.km28 <- stepFlexclust(MD.x, 2:8, nrep = 10,verbose = FALSE) ## Use Kmeans clustering and estimate 2 to 8 clusters.
+MD.km28 <- relabel(MD.km28)
+plot(MD.km28, xlab = "number of segments") ### Plots clusters based on motives (descriptors not numeric variables)
+##MD.km28
+histogram(MD.km28[["5"]], data = MD.x, xlim = 0:1) ##[[#]] represents number of clusters.
+### Choose the amount of clusters (5) in this case to observe the results. 
+
+```
+##The End: Now you have the tools to be a Rock Star!
