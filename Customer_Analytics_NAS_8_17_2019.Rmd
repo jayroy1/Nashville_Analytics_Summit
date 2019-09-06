@@ -497,7 +497,7 @@ plot(cust_CLV$customer,cust_CLV$clv, main="Why we are in trouble?", xlab = "Cust
 
 clv_d <- cust_CLV[order(-cust_CLV$clv),]
 clv_d <- as.data.frame(cust_CLV)
-clv_d <- clv_d[order(-clv),]
+clv_d <- clv_d[order(-clv_d$clv),]
 summary(clv_d)
 clv_values <- subset(clv_d,clv!=0)
 ## Create df with only positive values.
