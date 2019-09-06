@@ -495,7 +495,7 @@ cust_CLV <- as.data.frame(cust_CLV)
 plot(cust_CLV$customer,cust_CLV$clv, main="Why we are in trouble?", xlab = "Customers", ylab = "Customer Lifetime Values")
 ## By observing the plot, What does this tell you?
 
-clv_d <- cust_CLV[order(-clv),]
+clv_d <- cust_CLV[order(-cust_CLV$clv),]
 clv_d <- as.data.frame(cust_CLV)
 clv_d <- clv_d[order(-clv),]
 summary(clv_d)
